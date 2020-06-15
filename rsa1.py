@@ -1,14 +1,7 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Jun 15 09:06:39 2020
-
-@author: revati
-"""
-
+import gmpy2
 import math
 import random
-import gmpy2
+
 
 def egcd(a, b):
     if a == 0:
@@ -31,13 +24,12 @@ def generate_prime(bit_length):
                 return candidate
             
 
-def bytes_to_integer(bytes_obj): #built-in
+def bytes_to_integer(bytes_obj): 
     return int.from_bytes(bytes_obj, byteorder='big')
 
 def integer_to_bytes(integer):
     k = integer.bit_length()
 
-    # adjust number of bytes
     bytes_length = k // 8 + (k % 8 > 0)
 
     bytes_obj = integer.to_bytes(bytes_length, byteorder='big')
@@ -68,33 +60,6 @@ def is_prime(num):
 
 def generate_key(modulus_length):
     prime_length = modulus_length // 2
-   
-    '''
-    p = int(input("Enter a prime number: "))
-    q = int(input("Enter another prime number: "))
-    
-    if not (is_prime(p) and is_prime(q)):
-        raise ValueError('Both numbers must be prime.')
-    elif p == q:
-        raise ValueError('p and q cannot be equal')
-   #p = utils.generate_prime(prime_length)
-
-   #q = utils.generate_prime(prime_length)
-    n = p * q
-    phi = (p-1) * (q-1)
-
-    #Choose an integer e such that e and phi(n) are coprime
-    e = random.randrange(1, phi)
-
-    #Use Euclid's Algorithm to verify that e and phi(n) are coprime
-    g = gcd(e, phi)
-    while g != 1:
-        e = random.randrange(1, phi)
-        g = gcd(e, phi)
-
-    #Use Extended Euclid's Algorithm to generate the private key
-    d = multiplicative_inverse(e, phi)
-    '''
     
     p = generate_prime(prime_length)
 
@@ -122,9 +87,7 @@ def encrypt_integer(public_key, m):
     (n, e) = public_key
 
     if m > n:
-       # print(m)
-       # print(n)
-        raise Exception("Message is too big for current RSA scheme!")
+        raise Exception("Message is too big for RSA scheme!")
 
     return pow(m, e, n)
 
@@ -135,7 +98,6 @@ def decrypt_integer(secret_key, c):
 
 def encrypt_string(public_key, message):
     integer = bytes_to_integer(message) #encoded msg
-   #print(integer)
     enc_integer = encrypt_integer(public_key, integer)
     enc_string = integer_to_bytes(enc_integer)
 
