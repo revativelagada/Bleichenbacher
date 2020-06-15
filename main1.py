@@ -203,7 +203,8 @@ def main():
         decrypted = PKCS1_decode(decrypted)
 
         assert decrypted == message
-
+        
+        decrypted = decrypted.decode('utf-8')
         print("queries:\t{}".format(queries))
         print("decrypt:\t{}".format(decrypted))
 
