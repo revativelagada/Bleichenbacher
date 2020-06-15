@@ -28,16 +28,11 @@ floor = lambda a, b: a // b
 
 
 def PKCS1_encode(message, total_bytes):
-    """
-    length(PKCS1(M)) = total_bytes(key size in bytes)
-    """
-    # 11 = 3 constant bytes(00,02,00) and at aleast 8 bytes for padding
     if len(message) > total_bytes - 11:
         raise Exception("Message is too big for encoding.")
     
     pad_len = total_bytes - 3 - len(message)
 
-    # non-zero padding bytes
     padding = bytes(random.sample(range(1, 256), pad_len))
 
     encoded = b'\x00\x02' + padding + b'\x00' + message
@@ -89,7 +84,7 @@ def prepare(message):
 # Step 2.A.(starting the search)
 def find_smallest_s(lower_bound, c):
     """
-    Find the smallest s >= lower_bound, s>=n/3B
+     s>=n/3B
     """
     s = lower_bound
 
@@ -106,8 +101,7 @@ def find_smallest_s(lower_bound, c):
 # Step 2.C.
 def find_s_in_range(a, b, prev_s, B, c):
     """ 
-    if one interval is present----
-    reduce the search only to relevant regions (determined by r)
+    if one interval is present, find smallest r(i) and s(i)
     """
     ri = ceil(2 * (b * prev_s - 2 * B), n)
 
@@ -129,7 +123,6 @@ def safe_interval_insert(M_new, interval):
 
     for i, (a, b) in enumerate(M_new):
         
-        # overlap found, construct the larger interval
         if (b >= interval.lower_bound) and (a <= interval.upper_bound):
             lb = min(a, interval.lower_bound)
             ub = max(b, interval.upper_bound)
@@ -137,7 +130,7 @@ def safe_interval_insert(M_new, interval):
             M_new[i] = Interval(lb, ub)
             return M_new
     
-    # no overlaps found, just insert the new interval
+    # no overlaps found
     M_new.append(interval)
 
     return M_new
@@ -167,12 +160,6 @@ def update_intervals(M, s, B):
 
 
 def bleichenbacher(ciphertext):
-    
-
-    # Step 1. is only needed when the ciphertext is
-    # not PKCS1 conforming
-
-    # integer value of ciphertext
    
     c = rsa1.bytes_to_integer(ciphertext)
    
@@ -180,18 +167,7 @@ def bleichenbacher(ciphertext):
     B = 2 ** (8 * (k - 2))
 
     M = [Interval(2 * B, 3 * B - 1)]
-    ''' 
-    flag = 1
-    if not(oracle(ciphertext)):
-        s0 = random.randint(a,b) #limits(a,b) teliyav
-        attempt = (c * pow(s0, e, n)) % n
-        attempt = utils.integer_to_bytes(attempt)
-        if not(oracle(attempt)):
-            s0 += 1
-        else:
-            flag = 0
-            c = utils.bytes_to_integer(attempt)
-    '''      
+    
     # Step 2.A.
     s = find_smallest_s(ceil(n, 3 * B), c)
 
@@ -210,10 +186,7 @@ def bleichenbacher(ciphertext):
             if a == b:
                 
                     return rsa1.integer_to_bytes(a % n) #blinding is not done
-            '''
-                else:
-                    return utils.integer_to_bytes((a*(utils.modinv(s0,n)))% n)
-            '''
+              
             s = find_s_in_range(a, b, s, B, c)
             
         M = update_intervals(M, s, B)
@@ -225,15 +198,6 @@ def main():
         message = bytes(message, 'utf-8')
        
         ciphertext = prepare(message)
-       
-    #   print("The ciphertext in bytes")
-       
-       #print(ciphertext)
-       # print("".join(chr(x) for x in bytearray(ciphertext)))# string la print cheydaniki
-        
-       # ciphertext = (input("enter ciphertext:")) 
-        #ciphertext= bytes(ciphertext, 'utf-8') # bytes maripotunnai.ila ivodhu, direct ga vellani
-        
         
         decrypted = bleichenbacher(ciphertext)
         decrypted = PKCS1_decode(decrypted)
@@ -241,7 +205,6 @@ def main():
         assert decrypted == message
 
         print("queries:\t{}".format(queries))
-       #print("message:\t{}".format(message))
         print("decrypt:\t{}".format(decrypted))
 
         
